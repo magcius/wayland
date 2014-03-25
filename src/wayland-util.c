@@ -39,9 +39,17 @@ wl_list_init(struct wl_list *list)
 	list->next = list;
 }
 
+#include <assert.h>
+
 WL_EXPORT void
 wl_list_insert(struct wl_list *list, struct wl_list *elm)
 {
+	struct wl_list *l;
+	for (l = list->next; l != list; l = l->next) {
+		if (l == elm)
+			assert (0);
+	}
+
 	elm->prev = list;
 	elm->next = list->next;
 	list->next = elm;
