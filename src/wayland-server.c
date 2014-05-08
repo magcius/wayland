@@ -1084,30 +1084,14 @@ wl_socket_init_for_display_name(struct wl_socket *s, const char *name)
 	return 0;
 }
 
-WL_EXPORT int
-wl_display_add_socket(struct wl_display *display, const char *name)
+static int
+_wl_display_add_socket(struct wl_display *display, struct wl_socket *s)
 {
-	struct wl_socket *s;
 	socklen_t size;
 
 	s = malloc(sizeof *s);
 	if (s == NULL)
 		return -1;
-
-	if (name == NULL)
-		name = getenv("WAYLAND_DISPLAY");
-	if (name == NULL)
-		name = "wayland-0";
-
-	if (wl_socket_init_for_display_name(s, name) < 0) {
-		wl_socket_destroy(s);
-		return -1;
-	}
-
-	if (wl_socket_lock(s) < 0) {
-		wl_socket_destroy(s);
-		return -1;
-	}
 
 	s->fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
 	if (s->fd < 0) {
@@ -1135,7 +1119,79 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 		wl_socket_destroy(s);
 		return -1;
 	}
+
 	wl_list_insert(display->socket_list.prev, &s->link);
+	return 0;
+}
+
+WL_EXPORT int
+wl_display_add_socket_auto(struct wl_display *display, char **name_out)
+{
+	struct wl_socket *s;
+	int displayno = 0;
+	char display_name[16] = "";
+
+	/* A reasonable number of maximum default sockets. If
+	 * you need more than this, use the explicit add_socket API. */
+	const int MAX_DISPLAYNO = 32;
+
+	s = malloc(sizeof *s);
+	if (s == NULL)
+		return -1;
+
+	do {
+		snprintf(display_name, sizeof display_name, "wayland-%d", displayno);
+		if (wl_socket_init_for_display_name(s, display_name) < 0) {
+			wl_socket_destroy(s);
+			return -1;
+		}
+
+		if (wl_socket_lock(s) < 0)
+			continue;
+
+		if (!_wl_display_add_socket(display, s)) {
+			wl_socket_destroy(s);
+			return -1;
+		}
+
+		*name_out = strdup(display_name);
+		return 0;
+	} while (displayno++ < MAX_DISPLAYNO);
+
+	/* Ran out of display names. */
+	wl_socket_destroy(s);
+	errno = EINVAL;
+	return -1;
+}
+
+WL_EXPORT int
+wl_display_add_socket(struct wl_display *display, const char *name)
+{
+	struct wl_socket *s;
+
+	s = malloc(sizeof *s);
+	if (s == NULL)
+		return -1;
+
+	if (name == NULL)
+		name = getenv("WAYLAND_DISPLAY");
+	if (name == NULL)
+		name = "wayland-0";
+
+	if (wl_socket_init_for_display_name(s, name) < 0) {
+		wl_socket_destroy(s);
+		return -1;
+	}
+
+	if (wl_socket_lock(s) < 0) {
+		wl_socket_destroy(s);
+		return -1;
+	}
+
+	if (!_wl_display_add_socket(display, s)) {
+		wl_socket_destroy(s);
+		return -1;
+	}
 
 	return 0;
 }
