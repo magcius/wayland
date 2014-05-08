@@ -1051,11 +1051,9 @@ get_socket_lock(struct wl_socket *socket)
 	return fd_lock;
 }
 
-WL_EXPORT int
-wl_display_add_socket(struct wl_display *display, const char *name)
+static int
+wl_socket_init_for_display_name(struct wl_socket *s, const char *name)
 {
-	struct wl_socket *s;
-	socklen_t size;
 	int name_size;
 	const char *runtime_dir;
 
@@ -1069,15 +1067,6 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 		return -1;
 	}
 
-	s = malloc(sizeof *s);
-	if (s == NULL)
-		return -1;
-
-	if (name == NULL)
-		name = getenv("WAYLAND_DISPLAY");
-	if (name == NULL)
-		name = "wayland-0";
-
 	memset(&s->addr, 0, sizeof s->addr);
 	s->addr.sun_family = AF_LOCAL;
 	name_size = snprintf(s->addr.sun_path, sizeof s->addr.sun_path,
@@ -1087,12 +1076,34 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	if (name_size > (int)sizeof s->addr.sun_path) {
 		wl_log("error: socket path \"%s/%s\" plus null terminator"
 		       " exceeds 108 bytes\n", runtime_dir, name);
-		wl_socket_destroy(s);
 		/* to prevent programs reporting
 		 * "failed to add socket: Success" */
 		errno = ENAMETOOLONG;
 		return -1;
 	};
+
+	return 0;
+}
+
+WL_EXPORT int
+wl_display_add_socket(struct wl_display *display, const char *name)
+{
+	struct wl_socket *s;
+	socklen_t size;
+
+	s = malloc(sizeof *s);
+	if (s == NULL)
+		return -1;
+
+	if (name == NULL)
+		name = getenv("WAYLAND_DISPLAY");
+	if (name == NULL)
+		name = "wayland-0";
+
+	if (wl_socket_init_for_display_name(s, name) < 0) {
+		wl_socket_destroy(s);
+		return -1;
+	}
 
 	s->fd_lock = get_socket_lock(s);
 	if (s->fd_lock < 0) {
@@ -1106,7 +1117,7 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 		return -1;
 	}
 
-	size = offsetof (struct sockaddr_un, sun_path) + name_size;
+	size = offsetof (struct sockaddr_un, sun_path) + strlen(s->addr.sun_path);
 	if (bind(s->fd, (struct sockaddr *) &s->addr, size) < 0) {
 		wl_log("bind() failed with error: %m\n");
 		wl_socket_destroy(s);
