@@ -277,19 +277,12 @@ static const struct wl_shm_interface shm_interface = {
 };
 
 static void
-bind_shm(struct wl_client *client,
-	 void *data, uint32_t version, uint32_t id)
+bind_shm(void *data, struct wl_resource *resource)
 {
-	struct wl_resource *resource;
+	struct wl_client *client = wl_resource_get_client(resource);
 	struct wl_display *display = wl_client_get_display(client);
 	struct wl_array *additional_formats;
 	uint32_t *p;
-
-	resource = wl_resource_create(client, &wl_shm_interface, 1, id);
-	if (!resource) {
-		wl_client_post_no_memory(client);
-		return;
-	}
 
 	wl_resource_set_implementation(resource, &shm_interface, data, NULL);
 
@@ -304,7 +297,7 @@ bind_shm(struct wl_client *client,
 WL_EXPORT int
 wl_display_init_shm(struct wl_display *display)
 {
-	if (!wl_global_create(display, &wl_shm_interface, 1, NULL, bind_shm))
+	if (!wl_global_create_auto(display, &wl_shm_interface, 1, NULL, bind_shm))
 		return -1;
 
 	return 0;

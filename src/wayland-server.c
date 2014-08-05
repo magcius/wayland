@@ -104,6 +104,7 @@ struct wl_global {
 	uint32_t version;
 	void *data;
 	wl_global_bind_func_t bind;
+	wl_global_auto_bind_func_t auto_bind;
 	struct wl_list link;
 };
 
@@ -676,6 +677,21 @@ wl_client_destroy(struct wl_client *client)
 }
 
 static void
+auto_bind_global(struct wl_global *global, struct wl_client *client,
+		 uint32_t version, uint32_t id)
+{
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client, global->interface, version, id);
+	if (resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	global->auto_bind(global->data, resource);
+}
+
+static void
 registry_bind(struct wl_client *client,
 	      struct wl_resource *resource, uint32_t name,
 	      const char *interface, uint32_t version, uint32_t id)
@@ -696,6 +712,8 @@ registry_bind(struct wl_client *client,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "invalid version for global %s (%d): have %d, wanted %d",
 				       interface, name, global->version, version);
+	else if (global->auto_bind)
+		auto_bind_global(global, client, version, id);
 	else
 		global->bind(client, global->data, version, id);
 }
@@ -883,10 +901,9 @@ wl_display_destroy(struct wl_display *display)
 	free(display);
 }
 
-WL_EXPORT struct wl_global *
-wl_global_create(struct wl_display *display,
-		 const struct wl_interface *interface, int version,
-		 void *data, wl_global_bind_func_t bind)
+static struct wl_global *
+wl_global_create_base(struct wl_display *display, const struct wl_interface *interface, int version,
+		      void *data, wl_global_bind_func_t bind, wl_global_auto_bind_func_t auto_bind)
 {
 	struct wl_global *global;
 	struct wl_resource *resource;
@@ -901,12 +918,14 @@ wl_global_create(struct wl_display *display,
 	if (global == NULL)
 		return NULL;
 
+	memset(global, 0, sizeof *global);
 	global->display = display;
 	global->name = display->id++;
 	global->interface = interface;
 	global->version = version;
-	global->data = data;
 	global->bind = bind;
+	global->auto_bind = auto_bind;
+	global->data = data;
 	wl_list_insert(display->global_list.prev, &global->link);
 
 	wl_list_for_each(resource, &display->registry_resource_list, link)
@@ -917,6 +936,22 @@ wl_global_create(struct wl_display *display,
 				       global->version);
 
 	return global;
+}
+
+WL_EXPORT struct wl_global *
+wl_global_create(struct wl_display *display,
+		 const struct wl_interface *interface, int version,
+		 void *data, wl_global_bind_func_t bind)
+{
+	return wl_global_create_base(display, interface, version, data, bind, NULL);
+}
+
+WL_EXPORT struct wl_global *
+wl_global_create_auto(struct wl_display *display,
+		      const struct wl_interface *interface, int version,
+		      void *data, wl_global_auto_bind_func_t auto_bind)
+{
+	return wl_global_create_base(display, interface, version, data, NULL, auto_bind);
 }
 
 WL_EXPORT void

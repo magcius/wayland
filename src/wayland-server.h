@@ -112,6 +112,11 @@ struct wl_global *wl_global_create(struct wl_display *display,
 				   const struct wl_interface *interface,
 				   int version,
 				   void *data, wl_global_bind_func_t bind);
+typedef void (*wl_global_auto_bind_func_t)(void *data, struct wl_resource *resource);
+struct wl_global *wl_global_create_auto(struct wl_display *display,
+					const struct wl_interface *interface,
+					int version,
+					void *data, wl_global_auto_bind_func_t bind);
 void wl_global_destroy(struct wl_global *global);
 
 struct wl_client *wl_client_create(struct wl_display *display, int fd);
