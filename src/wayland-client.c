@@ -644,8 +644,7 @@ wl_proxy_marshal_array(struct wl_proxy *proxy, uint32_t opcode,
 }
 
 static void
-display_handle_error(void *data,
-		     struct wl_display *display, void *object,
+display_handle_error(struct wl_display *display, void *object,
 		     uint32_t code, const char *message)
 {
 	struct wl_proxy *proxy = object;
@@ -658,7 +657,7 @@ display_handle_error(void *data,
 }
 
 static void
-display_handle_delete_id(void *data, struct wl_display *display, uint32_t id)
+display_handle_delete_id(struct wl_display *display, uint32_t id)
 {
 	struct wl_proxy *proxy;
 
@@ -876,9 +875,9 @@ wl_display_get_fd(struct wl_display *display)
 }
 
 static void
-sync_callback(void *data, struct wl_callback *callback, uint32_t serial)
+sync_callback(struct wl_callback *callback, uint32_t serial)
 {
-	int *done = data;
+	int *done = wl_callback_get_user_data(callback);
 
 	*done = 1;
 	wl_callback_destroy(callback);
@@ -1109,7 +1108,7 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 			wl_closure_print(closure, &proxy->object, false);
 
 		wl_closure_invoke(closure, WL_CLOSURE_INVOKE_CLIENT,
-				  &proxy->object, opcode, proxy->user_data);
+				  &proxy->object, opcode);
 	}
 
 	wl_closure_destroy(closure);

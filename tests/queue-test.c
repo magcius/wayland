@@ -52,7 +52,7 @@ struct display {
 };
 
 static void
-registry_handle_global(void *data, struct wl_registry *registry,
+registry_handle_global(struct wl_registry *registry,
 		       uint32_t id, const char *interface, uint32_t version)
 {
 	int *pcounter = data;
@@ -98,7 +98,7 @@ struct multiple_queues_state {
 };
 
 static void
-sync_callback(void *data, struct wl_callback *callback, uint32_t serial)
+sync_callback(struct wl_callback *callback, uint32_t serial)
 {
 	struct multiple_queues_state *state = data;
 

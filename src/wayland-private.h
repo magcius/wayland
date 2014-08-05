@@ -149,7 +149,7 @@ enum wl_closure_invoke_flag {
 
 void
 wl_closure_invoke(struct wl_closure *closure, uint32_t flags,
-		  struct wl_object *target, uint32_t opcode, void *data);
+		  struct wl_object *target, uint32_t opcode);
 void
 wl_closure_dispatch(struct wl_closure *closure, wl_dispatcher_func_t dispatcher,
 		    struct wl_object *target, uint32_t opcode);

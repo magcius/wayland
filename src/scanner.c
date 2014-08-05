@@ -906,13 +906,10 @@ emit_structs(struct wl_list *message_list, struct interface *interface, enum sid
 
 		n = strlen(m->name) + 17;
 		if (side == SERVER) {
-			printf("struct wl_client *client,\n"
-			       "%sstruct wl_resource *resource",
-			       indent(n));
+			printf("struct wl_resource *resource");
 		} else {
-			printf("void *data,\n"),
-			printf("%sstruct %s *%s",
-			       indent(n), interface->name, interface->name);
+			printf("struct %s *%s",
+			       interface->name, interface->name);
 		}
 
 		wl_list_for_each(a, &m->arg_list, link) {

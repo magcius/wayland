@@ -332,7 +332,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		if ((resource_flags & WL_MAP_ENTRY_LEGACY) ||
 		    resource->dispatcher == NULL) {
 			wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER,
-					  object, opcode, client);
+					  object, opcode);
 		} else {
 			wl_closure_dispatch(closure, resource->dispatcher,
 					    object, opcode);
@@ -679,10 +679,10 @@ wl_client_destroy(struct wl_client *client)
 }
 
 static void
-registry_bind(struct wl_client *client,
-	      struct wl_resource *resource, uint32_t name,
+registry_bind(struct wl_resource *resource, uint32_t name,
 	      const char *interface, uint32_t version, uint32_t id)
 {
+	struct wl_client *client = wl_resource_get_client(resource);
 	struct wl_global *global;
 	struct wl_display *display = resource->data;
 
@@ -708,9 +708,9 @@ static const struct wl_registry_interface registry_interface = {
 };
 
 static void
-display_sync(struct wl_client *client,
-	     struct wl_resource *resource, uint32_t id)
+display_sync(struct wl_resource *resource, uint32_t id)
 {
+	struct wl_client *client = wl_resource_get_client(resource);
 	struct wl_resource *callback;
 	uint32_t serial;
 
@@ -732,9 +732,9 @@ unbind_resource(struct wl_resource *resource)
 }
 
 static void
-display_get_registry(struct wl_client *client,
-		     struct wl_resource *resource, uint32_t id)
+display_get_registry(struct wl_resource *resource, uint32_t id)
 {
+	struct wl_client *client = wl_resource_get_client(resource);
 	struct wl_display *display = resource->data;
 	struct wl_resource *registry_resource;
 	struct wl_global *global;

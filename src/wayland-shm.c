@@ -90,7 +90,7 @@ destroy_buffer(struct wl_resource *resource)
 }
 
 static void
-shm_buffer_destroy(struct wl_client *client, struct wl_resource *resource)
+shm_buffer_destroy(struct wl_resource *resource)
 {
 	wl_resource_destroy(resource);
 }
@@ -121,11 +121,12 @@ format_is_supported(struct wl_client *client, uint32_t format)
 }
 
 static void
-shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
+shm_pool_create_buffer(struct wl_resource *resource,
 		       uint32_t id, int32_t offset,
 		       int32_t width, int32_t height,
 		       int32_t stride, uint32_t format)
 {
+	struct wl_client *client = wl_resource_get_client(resource);
 	struct wl_shm_pool *pool = wl_resource_get_user_data(resource);
 	struct wl_shm_buffer *buffer;
 
@@ -183,13 +184,13 @@ destroy_pool(struct wl_resource *resource)
 }
 
 static void
-shm_pool_destroy(struct wl_client *client, struct wl_resource *resource)
+shm_pool_destroy(struct wl_resource *resource)
 {
 	wl_resource_destroy(resource);
 }
 
 static void
-shm_pool_resize(struct wl_client *client, struct wl_resource *resource,
+shm_pool_resize(struct wl_resource *resource,
 		int32_t size)
 {
 	struct wl_shm_pool *pool = wl_resource_get_user_data(resource);
@@ -221,9 +222,10 @@ struct wl_shm_pool_interface shm_pool_interface = {
 };
 
 static void
-shm_create_pool(struct wl_client *client, struct wl_resource *resource,
+shm_create_pool(struct wl_resource *resource,
 		uint32_t id, int fd, int32_t size)
 {
+	struct wl_client *client = wl_resource_get_client(resource);
 	struct wl_shm_pool *pool;
 
 	pool = malloc(sizeof *pool);
