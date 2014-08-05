@@ -874,8 +874,7 @@ emit_structs(struct wl_list *message_list, struct interface *interface, enum sid
 		desc_dump(desc->text, " * ");
 		printf(" */\n");
 	}
-	printf("struct %s_%s {\n", interface->name,
-	       (side == SERVER) ? "interface" : "listener");
+	printf("struct %s_implementation {\n", interface->name);
 
 	wl_list_for_each(m, message_list, link) {
 		struct description *mdesc = m->description;

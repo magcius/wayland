@@ -305,15 +305,11 @@ wl_resource_create(struct wl_client *client,
 		   int version, uint32_t id);
 void
 wl_resource_set_implementation(struct wl_resource *resource,
-			       const void *implementation,
-			       void *data,
-			       wl_resource_destroy_func_t destroy);
+			       const void *implementation);
 void
 wl_resource_set_dispatcher(struct wl_resource *resource,
 			   wl_dispatcher_func_t dispatcher,
-			   const void *implementation,
-			   void *data,
-			   wl_resource_destroy_func_t destroy);
+			   const void *implementation);
 
 void
 wl_resource_destroy(struct wl_resource *resource);

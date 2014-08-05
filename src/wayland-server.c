@@ -1218,25 +1218,17 @@ wl_display_get_destroy_listener(struct wl_display *display,
 
 WL_EXPORT void
 wl_resource_set_implementation(struct wl_resource *resource,
-			       const void *implementation,
-			       void *data, wl_resource_destroy_func_t destroy)
+			       const void *implementation)
 {
 	resource->object.implementation = implementation;
-	resource->data = data;
-	resource->destroy = destroy;
-	resource->dispatcher = NULL;
 }
 
 WL_EXPORT void
 wl_resource_set_dispatcher(struct wl_resource *resource,
-			   wl_dispatcher_func_t dispatcher,
-			   const void *implementation,
-			   void *data, wl_resource_destroy_func_t destroy)
+			   wl_dispatcher_func_t dispatcher)
 {
 	resource->dispatcher = dispatcher;
 	resource->object.implementation = implementation;
-	resource->data = data;
-	resource->destroy = destroy;
 }
 
 WL_EXPORT struct wl_resource *

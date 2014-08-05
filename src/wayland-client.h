@@ -136,12 +136,12 @@ wl_proxy_marshal_array_constructor(struct wl_proxy *proxy,
 				   const struct wl_interface *interface);
 
 void wl_proxy_destroy(struct wl_proxy *proxy);
-int wl_proxy_add_listener(struct wl_proxy *proxy,
-			  void (**implementation)(void), void *data);
-const void *wl_proxy_get_listener(struct wl_proxy *proxy);
-int wl_proxy_add_dispatcher(struct wl_proxy *proxy,
+int wl_proxy_set_implementation(struct wl_proxy *proxy,
+                                void (**implementation)(void));
+const void *wl_proxy_get_implementation(struct wl_proxy *proxy);
+int wl_proxy_set_dispatcher(struct wl_proxy *proxy,
 			    wl_dispatcher_func_t dispatcher_func,
-			    const void * dispatcher_data, void *data);
+			    const void *implementation);
 void wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data);
 void *wl_proxy_get_user_data(struct wl_proxy *proxy);
 uint32_t wl_proxy_get_id(struct wl_proxy *proxy);

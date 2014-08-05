@@ -377,16 +377,14 @@ wl_proxy_destroy(struct wl_proxy *proxy)
 	pthread_mutex_unlock(&display->mutex);
 }
 
-/** Set a proxy's listener
+/** Set a proxy's implementation
  *
  * \param proxy The proxy object
- * \param implementation The listener to be added to proxy
- * \param data User data to be associated with the proxy
+ * \param implementation The implementation to be added to proxy
  * \return 0 on success or -1 on failure
  *
- * Set proxy's listener to \c implementation and its user data to
- * \c data. If a listener has already been set, this function
- * fails and nothing is changed.
+ * Set proxy's implementation to \c implementation.
+ * If a implementation has already been set, this function fails and nothing is changed.
  *
  * \c implementation is a vector of function pointers. For an opcode
  * \c n, \c implementation[n] should point to the handler of \c n for
@@ -395,11 +393,11 @@ wl_proxy_destroy(struct wl_proxy *proxy)
  * \memberof wl_proxy
  */
 WL_EXPORT int
-wl_proxy_add_listener(struct wl_proxy *proxy,
-		      void (**implementation)(void), void *data)
+wl_proxy_set_implementation(struct wl_proxy *proxy,
+			    void (**implementation)(void))
 {
 	if (proxy->object.implementation || proxy->dispatcher) {
-		wl_log("proxy %p already has listener\n", proxy);
+		wl_log("proxy %p already has implementation\n", proxy);
 		return -1;
 	}
 
@@ -409,47 +407,45 @@ wl_proxy_add_listener(struct wl_proxy *proxy,
 	return 0;
 }
 
-/** Get a proxy's listener
+/** Get a proxy's implementation
  *
  * \param proxy The proxy object
- * \return The address of the proxy's listener or NULL if no listener is set
+ * \return The address of the proxy's implementation or NULL if no implementation is set
  *
- * Gets the address to the proxy's listener; which is the listener set with
- * \ref wl_proxy_add_listener.
+ * Gets the address to the proxy's implementation; which is the implementation set with
+ * \ref wl_proxy_add_implementation.
  *
- * This function is useful in client with multiple listeners on the same
+ * This function is useful in client with multiple implementations on the same
  * interface to allow the identification of which code to eexecute.
  *
  * \memberof wl_proxy
  */
 WL_EXPORT const void *
-wl_proxy_get_listener(struct wl_proxy *proxy)
+wl_proxy_get_implementation(struct wl_proxy *proxy)
 {
 	return proxy->object.implementation;
 }
 
-/** Set a proxy's listener (with dispatcher)
+/** Set a proxy's implementation (with dispatcher)
  *
  * \param proxy The proxy object
  * \param dispatcher The dispatcher to be used for this proxy
- * \param implementation The dispatcher-specific listener implementation
- * \param data User data to be associated with the proxy
+ * \param implementation The dispatcher-specific implementation implementation
  * \return 0 on success or -1 on failure
  *
- * Set proxy's listener to use \c dispatcher_func as its dispatcher and \c
- * dispatcher_data as its dispatcher-specific implementation and its user data
- * to \c data. If a listener has already been set, this function
- * fails and nothing is changed.
+ * Set proxy's implementation to use \c dispatcher_func as its dispatcher and \c
+ * implementation as its dispatcher-specific implementation.
+ * If a implementation has already been set, this function fails and nothing is changed.
  *
- * The exact details of dispatcher_data depend on the dispatcher used.  This
+ * The exact details of implementation depend on the dispatcher used.  This
  * function is intended to be used by language bindings, not user code.
  *
  * \memberof wl_proxy
  */
 WL_EXPORT int
-wl_proxy_add_dispatcher(struct wl_proxy *proxy,
+wl_proxy_set_dispatcher(struct wl_proxy *proxy,
 			wl_dispatcher_func_t dispatcher,
-			const void *implementation, void *data)
+			const void *implementation)
 {
 	if (proxy->object.implementation || proxy->dispatcher) {
 		wl_log("proxy %p already has listener\n");
@@ -458,7 +454,6 @@ wl_proxy_add_dispatcher(struct wl_proxy *proxy,
 
 	proxy->object.implementation = implementation;
 	proxy->dispatcher = dispatcher;
-	proxy->user_data = data;
 
 	return 0;
 }
