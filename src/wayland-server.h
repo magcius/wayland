@@ -263,56 +263,6 @@ wl_signal_emit(struct wl_signal *signal, void *data)
 
 typedef void (*wl_resource_destroy_func_t)(struct wl_resource *resource);
 
-#ifndef WL_HIDE_DEPRECATED
-
-struct wl_object {
-	const struct wl_interface *interface;
-	const void *implementation;
-	uint32_t id;
-};
-
-struct wl_resource {
-	struct wl_object object;
-	wl_resource_destroy_func_t destroy;
-	struct wl_list link;
-	struct wl_signal destroy_signal;
-	struct wl_client *client;
-	void *data;
-};
-
-struct wl_buffer {
-	struct wl_resource resource;
-	int32_t width, height;
-	uint32_t busy_count;
-} WL_DEPRECATED;
-
-
-uint32_t
-wl_client_add_resource(struct wl_client *client,
-		       struct wl_resource *resource) WL_DEPRECATED;
-
-struct wl_resource *
-wl_client_add_object(struct wl_client *client,
-		     const struct wl_interface *interface,
-		     const void *implementation,
-		     uint32_t id, void *data) WL_DEPRECATED;
-struct wl_resource *
-wl_client_new_object(struct wl_client *client,
-		     const struct wl_interface *interface,
-		     const void *implementation, void *data) WL_DEPRECATED;
-
-struct wl_global *
-wl_display_add_global(struct wl_display *display,
-		      const struct wl_interface *interface,
-		      void *data,
-		      wl_global_bind_func_t bind) WL_DEPRECATED;
-
-void
-wl_display_remove_global(struct wl_display *display,
-			 struct wl_global *global) WL_DEPRECATED;
-
-#endif
-
 /*
  * Post an event to the client's object referred to by 'resource'.
  * 'opcode' is the event number generated from the protocol XML

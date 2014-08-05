@@ -27,8 +27,6 @@
 
 #include <stdarg.h>
 
-#define WL_HIDE_DEPRECATED 1
-
 #include "wayland-util.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
