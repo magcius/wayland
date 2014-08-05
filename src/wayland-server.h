@@ -97,9 +97,6 @@ void wl_display_terminate(struct wl_display *display);
 void wl_display_run(struct wl_display *display);
 void wl_display_flush_clients(struct wl_display *display);
 
-typedef void (*wl_global_bind_func_t)(struct wl_client *client, void *data,
-				      uint32_t version, uint32_t id);
-
 uint32_t wl_display_get_serial(struct wl_display *display);
 uint32_t wl_display_next_serial(struct wl_display *display);
 
@@ -108,10 +105,6 @@ void wl_display_add_destroy_listener(struct wl_display *display,
 struct wl_listener *wl_display_get_destroy_listener(struct wl_display *display,
 						    wl_notify_func_t notify);
 
-struct wl_global *wl_global_create(struct wl_display *display,
-				   const struct wl_interface *interface,
-				   int version,
-				   void *data, wl_global_bind_func_t bind);
 typedef void (*wl_global_auto_bind_func_t)(void *data, struct wl_resource *resource);
 struct wl_global *wl_global_create_auto(struct wl_display *display,
 					const struct wl_interface *interface,
@@ -306,6 +299,9 @@ wl_client_new_object(struct wl_client *client,
 		     const struct wl_interface *interface,
 		     const void *implementation, void *data) WL_DEPRECATED;
 
+typedef void (*wl_global_bind_func_t)(struct wl_client *client, void *data,
+				      uint32_t version, uint32_t id);
+
 struct wl_global *
 wl_display_add_global(struct wl_display *display,
 		      const struct wl_interface *interface,
@@ -315,6 +311,11 @@ wl_display_add_global(struct wl_display *display,
 void
 wl_display_remove_global(struct wl_display *display,
 			 struct wl_global *global) WL_DEPRECATED;
+
+struct wl_global *wl_global_create(struct wl_display *display,
+				   const struct wl_interface *interface,
+				   int version,
+				   void *data, wl_global_bind_func_t bind);
 
 #endif
 

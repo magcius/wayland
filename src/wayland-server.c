@@ -97,6 +97,9 @@ struct wl_display {
 	struct wl_array additional_shm_formats;
 };
 
+typedef void (*wl_global_bind_func_t)(struct wl_client *client, void *data,
+				      uint32_t version, uint32_t id);
+
 struct wl_global {
 	struct wl_display *display;
 	const struct wl_interface *interface;
@@ -938,6 +941,11 @@ wl_global_create_base(struct wl_display *display, const struct wl_interface *int
 	return global;
 }
 
+struct wl_global *
+wl_global_create(struct wl_display *display,
+		 const struct wl_interface *interface, int version,
+		 void *data, wl_global_bind_func_t bind) WL_DEPRECATED;
+
 WL_EXPORT struct wl_global *
 wl_global_create(struct wl_display *display,
 		 const struct wl_interface *interface, int version,
@@ -1413,7 +1421,7 @@ wl_display_add_global(struct wl_display *display,
 		      const struct wl_interface *interface,
 		      void *data, wl_global_bind_func_t bind)
 {
-	return wl_global_create(display, interface, interface->version, data, bind);
+	return wl_global_create_base(display, interface, interface->version, data, bind, NULL);
 }
 
 void
